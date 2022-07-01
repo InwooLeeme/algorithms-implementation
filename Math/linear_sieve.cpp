@@ -11,6 +11,7 @@ struct LinearSieve {
 	vector<int> p;
 	int sieve[sz + 1]; // sieve[i] : IsPrime(i) ? 0 : smallest prime factor
 	LinearSieve() : sieve{} {
+		sieve[0] = sieve[1] = -1;
 		for (int i = 2; i <= sz; i++) {
 			if (!sieve[i]) p.push_back(i);
 			for (auto j : p) {
@@ -20,4 +21,10 @@ struct LinearSieve {
 			}
 		}
 	}
-};
+	bool IsPrime(int n) { return !sieve[n]; }
+}; LinearSieve Sieve;
+
+int32_t main() {
+	fastio;
+	for (auto& i : Sieve.p) cout << i << ' ';
+}
