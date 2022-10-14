@@ -20,8 +20,11 @@ int Sol(const vector<int>& coins, int n,int k){
 	return d[k];
 }
 
-// 0 - 1 knaspack
 // 물건을 한번씩만 쓰는 배낭 문제, 한개를 여러번 사용시는 M을 순방향으로 돌리면 됨.
+
+/* 
+D[i][j] = min(D[i - 1][j], D[i - 1][j - w[i]] + v[i]) : [0, i]의 범위에서 무게 합이 j이하가 되도록 물건을 골랐을 때 가치 합의 최대값
+ */
 int N, M;
 ll dp[10001], W[101], V[101];
 void solve() {

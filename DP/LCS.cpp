@@ -21,3 +21,24 @@ int LCS(string& a,string& b,const int sz = 1000){
 	}
 	return d[aSz][bSz];
 }
+
+// Get LCS length and Tracking LCS
+pair<int,string> Tracking_LCS(string& a,string& b){
+    const int N = a.size(),M = b.size();
+    wector<int> d(N + 1,vector<int>(M + 1, 0));
+    for(int i = 1; i <= N; i++) for(int j = 1; j <= M; j++){
+        if(a[i - 1] == b[j - 1]) d[i][j] = d[i - 1][j - 1] + 1;
+        else d[i][j] = max(d[i - 1][j], d[i][j - 1]);
+    }
+    int x = a.size(),y = b.size();
+    string ret;
+    while(x != 0 and y != 0){
+        int cur = d[x][y];
+        if (d[x - 1][y - 1] == cur) { x--; y--; }
+        else if (d[x - 1][y] == cur) x--;
+        else if (d[x][y - 1] == cur) y--;
+        else { ret += a[x - 1]; x--; y--; }
+    }
+    reverse(ret.begin(), ret.end());
+    return {d[N][M], ret};
+}
