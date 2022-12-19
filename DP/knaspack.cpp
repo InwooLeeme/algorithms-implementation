@@ -22,17 +22,28 @@ int Sol(const vector<int>& coins, int n,int k){
 
 // 물건을 한번씩만 쓰는 배낭 문제, 한개를 여러번 사용시는 M을 순방향으로 돌리면 됨.
 
-/* 
-D[i][j] = min(D[i - 1][j], D[i - 1][j - w[i]] + v[i]) : [0, i]의 범위에서 무게 합이 j이하가 되도록 물건을 골랐을 때 가치 합의 최대값
- */
-int N, M;
-ll dp[10001], W[101], V[101];
-void solve() {
-   cin >> N >> M;
-   for (int i = 0; i < N; i++)
-      cin >> W[i] >> V[i];
-   for (int i = 0; i < N; i++)
-      for (int j = M; j >= W[i]; j--)
-         dp[j] = max(dp[j], dp[j - W[i]] + V[i]);
-   cout << dp[M];
+/*
+- 물건 수 N, 무게 제한 M
+- v[i]에는 i번째 물건의 <무게, 가치>를 저장
+*/
+vector<vector<int>> dp;
+
+void Sol(){
+    int N, M; cin >> N >> M;
+
+    vector<pair<int, int>> v(N+1); // <weight, value>
+    for(int i=1; i<=N; i++)
+        cin >> v[i].first >> v[i].second;
+
+    dp.resize(N+1, vector<int>(M+1));
+
+    for(int i=1; i<=N; i++)
+        for(int j=1; j<=M; j++) {
+            dp[i][j] = dp[i-1][j];
+            if(v[i].first <= j)
+                dp[i][j] = max(dp[i][j], dp[i-1][j - v[i].first] + v[i].second);
+        }
+
+    cout << dp[N][M] << "\n";
+
 }
