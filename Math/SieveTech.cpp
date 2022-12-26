@@ -23,6 +23,17 @@ time : O(logK)
 */
 
 constexpr int sz = 10'000'000;
+
+// Sieve
+vector<bool> p(sz, 1);
+	p[1] = 0;
+	for(int i = 2; i * i < sz; i++){
+		for(int j = 2; i * j < sz; j++) p[i * j] = 0;
+	}
+	vector<int> v;
+	for(int i = 2; i < sz; i++) if(p[i]) v.push_back(i);
+
+// 1
 int min_fact[sz + 1]; // i의 가장 작은 소인수
 
 void Sieve(){
@@ -34,6 +45,8 @@ void Sieve(){
 		}
 	}
 }
+
+// 2
 
 vector<int> SieveWithFactorize(int x){
     vector<int> ret;
