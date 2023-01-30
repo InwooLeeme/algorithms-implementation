@@ -11,55 +11,31 @@ using namespace std;
 using namespace __gnu_cxx;
 using namespace __gnu_pbds;
 
-
+template<size_t sz>
 struct SegTree {
-	ll tree[1 << 21], lazy[1 << 21]; //arr[0, n-1] -> tree[sz, sz + n - 1]
-	int sz = 1 << 20;
-
-	void construct() {
-		for (int i = sz - 1; i > 0; i--) {
-			tree[i] = tree[i << 1] + tree[i << 1 | 1];
-		}
+	vector<int> tree, lazy;
+	SegTree() : tree(sz << 1), lazy(sz << 1) {}
+	void Push(int node, int L, int R) {
+		if (node < sz) for (const int nxt : { node << 1, node << 1 | 1}) lazy[nxt] += lazy[node];
+		tree[node] += lazy[node] * (R - L + 1), lazy[node] = 0;
 	}
-	void propagate(int node, int nodeL, int nodeR) {
-		if (lazy[node]) {
-			if (node < sz) {
-				lazy[node << 1] += lazy[node];
-				lazy[node << 1 | 1] += lazy[node];
-			}
-			tree[node] += lazy[node] * (nodeR - nodeL + 1);
-			lazy[node] = 0;
-		}
+	void Update(int l, int r, int val, int node = 1, int L = 1, int R = sz) {
+		Push(node, L, R);
+		if (r < L || R < l) return;
+		if (l <= L && R <= r) { lazy[node] += val, Push(node, L, R); return; }
+		int mid = L + R >> 1;
+		Update(l, r, val, node << 1, L, mid);
+		Update(l, r, val, node << 1 | 1, mid + 1, R);
+		tree[node] = tree[node << 1] + tree[node << 1 | 1];
 	}
-	//[l, r] += k
-	void update(int L, int R, int k, int nodeNum, int nodeL, int nodeR) {
-		propagate(nodeNum, nodeL, nodeR);
-		if (R < nodeL || nodeR < L) return;
-		if (L <= nodeL && nodeR <= R) {
-			lazy[nodeNum] += k;
-			propagate(nodeNum, nodeL, nodeR);
-			return;
-		}
-		int mid = nodeL + nodeR >> 1;
-		update(L, R, k, nodeNum << 1, nodeL, mid);
-		update(L, R, k, nodeNum << 1 | 1, mid + 1, nodeR);
-		tree[nodeNum] = tree[nodeNum << 1] + tree[nodeNum << 1 | 1];
+	int Query(int l, int r, int node = 1, int L = 1, int R = sz) {
+		Push(node, L, R);
+		if (r < L || R < l) return 0;
+		if (l <= L && R <= r) return tree[node];
+		int mid = L + R >> 1;
+		return Query(l, r, node << 1, L, mid) + Query(l, r, node << 1 | 1, mid + 1, R);
 	}
-	void update(int l, int r, int k) {
-		update(l, r, k, 1, 1, sz);
-	}
-	//[l, r] : 1-indexed
-	ll query(int L, int R, int nodeNum, int nodeL, int nodeR) {
-		propagate(nodeNum, nodeL, nodeR);
-		if (R < nodeL || nodeR < L) return 0;
-		if (L <= nodeL && nodeR <= R) return tree[nodeNum];
-		int mid = nodeL + nodeR >> 1;
-		return query(L, R, nodeNum << 1, nodeL, mid) + query(L, R, nodeNum << 1 | 1, mid + 1, nodeR);
-	}
-	ll query(int l, int r) {
-		return query(l, r, 1, 1, sz);
-	}
-} ST;
+};
 
 int32_t main(){
   fastio;
