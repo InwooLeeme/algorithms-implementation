@@ -17,25 +17,21 @@ using namespace __gnu_pbds;
 */
 
 struct node {
-    int v;
-    int s, e;
+    int v, s, e;
     node *l, *r;
-    node(int s, int e): v(0), s(s), e(e) {}
-    
-    void update(int k, int d) {
-        assert(s <= k and k <= e);
-        if (s == e) { v = d; return; }
-        int m = (s+e)/2;
+    node(int s, int e): v(0), s(s), e(e), l(0), r(0) {}
+    void update(int k, int x) {
+        if (s == e) { v = x; return; }
+        int m = (s+e)>>1;
         if (k <= m) {
             if (!l) l = new node(s,m);
-            l->update(k,d);
+            l->update(k,x);
         } else {
             if (!r) r = new node(m+1,e);
-            r->update(k,d);
+            r->update(k,x);
         }
         v = (l?l->v:0) + (r?r->v:0);
     }
-    
     int query(int a, int b) {
         if (a <= s and e <= b) return v;
         if (b < s or e < a) return 0;
