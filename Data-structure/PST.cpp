@@ -17,9 +17,10 @@ using namespace __gnu_pbds;
 using pii = pair<int, int>;
 
 /*
- https://www.acmicpc.net/problem/11012
+https://www.acmicpc.net/problem/11012
 11012 AC Code
 PST Implement Code
+ref : https://www.slideshare.net/SuhyunPark23/persistent-segment-tree-sogang-icpc-team-2019
 */
 
 struct PST {
