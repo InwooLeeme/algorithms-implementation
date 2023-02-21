@@ -15,6 +15,10 @@ using namespace __gnu_pbds;
 /*
 9248 Suffix Array AC Code
 https://www.acmicpc.net/problem/9248
+
+Ref : 
+https://gumgood.github.io/suffix-array-and-lcp
+https://blog.naver.com/PostView.naver?blogId=kks227&logNo=221028710658&categoryNo=299&parentCategoryNo=0&viewDate=&currentPage=4&postListTopCurrentPage=1&from=postList&userTopListOpen=true&userTopListCount=5&userTopListManageOpen=false&userTopListCurrentPage=4
 */
 
 // Build Suffix Array O(NlogN^2)
