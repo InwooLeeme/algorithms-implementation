@@ -34,11 +34,11 @@ Catch Time : O(1)
 Problem : https://www.acmicpc.net/problem/11401
 */
 
-const int MOD = 1e9 + 7;
+const int MOD = 1e9 + 7; // must be prime number
 int f[4000001];
 
 // mod inverse
-int minv(int x,int y){
+int nCr(int x,int y){
 	int p = MOD - 2;
 	for(; p; p >>= 1){
 		if(p & 1) x = x * y % MOD;
@@ -52,5 +52,5 @@ int32_t main(){
 	int n,k; cin >> n >> k;
 	f[0] = 1;
 	for(int i = 1; i <= n; i++) f[i] = i * f[i - 1] % MOD;
-	cout << minv(f[n], f[k] * f[n - k] % MOD) << "\n";
+	cout << nCr(f[n], f[k] * f[n - k] % MOD) << "\n";
 }
