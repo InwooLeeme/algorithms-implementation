@@ -10,9 +10,9 @@ using namespace std;
 const int sz = 10000;
 int v[sz + 1],pSum[sz + 1];
 
-// 2D prefix sum : 0 - indexed base
+// 2D prefix sum : 1 - indexed base
 
-
+for(int i = 1; i <= n; i++) for(int j = 1; j <= n; j++) psum[i][j] = v[i][j] + psum[i][j - 1] + psum[i - 1][j] - psum[i - 1][j - 1];
 
 int32_t main(){
     int n; cin >> n;
