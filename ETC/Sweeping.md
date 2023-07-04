@@ -14,7 +14,7 @@ PQ의 사이즈가 곧 겹쳐있는 선분의 개수
     vector<pii> v(N);
     for(auto& [a, b] : v) sf2(a, b);
     sort(all(v)); // 오름차순
-    int mx = 0,ret = 0;
+    int mx = 1,ret = 0;
     PQ.push(v[0].second);
     for(int i = 1; i < N; i++){
         auto [st, en] = v[i];
