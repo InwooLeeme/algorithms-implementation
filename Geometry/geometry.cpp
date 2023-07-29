@@ -53,6 +53,13 @@ struct line {
 	double length() { return sqrt(dist(a, b)); }
 	bool is_on_line(point c) { return !ccw(a, b, c) && min(a, b) <= c && c <= max(a, b); }
 	friend int is_cross(line a, line b) { return is_cross(a.a, a.b, b.a, b.b); }
+	// point to line distance
+	friend double dist(line a, point b) {
+		auto CCW = [&](point& a, point& b, point& c) -> int {
+		    return (b.x - a.x) * (c.y - b.y) - (c.x - b.x) * (b.y - a.y);
+		};
+		return CCW(a.a, a.b, b) / a.length();
+	}
 	/* operators */
 	friend istream& operator >> (istream& in, line& i) { in >> i.a >> i.b; return in; }
 };
