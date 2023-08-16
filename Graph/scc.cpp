@@ -35,6 +35,20 @@ struct SCC {
 		for (int i = 1; i <= n; i++)
 			if (!dfs_order[i]) DFS(i);
 	}
+	vector<vector<int>> GetDAG(){
+		vector<vector<int>> G(scc_cnt);
+		for(int i = 1; i <= n; i++){
+			for(auto& nxt : adj[i]){
+				if(scc[i] == scc[nxt]) continue;
+				G[scc[i] - 1].push_back(scc[nxt]);
+			}
+		}
+		for(auto& i : G){
+			sort(i.begin(), i.end());
+			i.erase(unique(i.begin(), i.end()), i.end());
+		}
+		return G;
+	}
 };
 
 int main() {
