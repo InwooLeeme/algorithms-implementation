@@ -25,6 +25,18 @@ struct UnionFind { // union-by-rank ver.
 	}
 };
 
+struct UnionFind { // -1 ver.
+	vector<int> P;
+	UnionFind(int n) : P(n, -1) {}
+	int Find(int x) { return P[x] < 0 ? x : P[x] = Find(P[x]); }
+	bool Union(int a, int b) {
+		a = Find(a), b = Find(b);
+		if (a == b) return 0;
+		P[a] += P[b]; P[b] = a; return 1;
+	}
+	int Cnt(int x) { return -P[Find(x)]; }
+};
+
 int32_t main(){
     fastio;
     int n; cin >> n;
