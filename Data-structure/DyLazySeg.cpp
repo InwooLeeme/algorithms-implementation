@@ -61,6 +61,45 @@ int Query(Node* nd, int l, int r, int s = 1, int e = 1e9){
     return Query(nd->l, l, r, s, mid) + Query(nd->r, l, r, mid + 1, e);
 }
 
+// struct Version
+struct SegTree {
+	struct Node {
+		int val, lazy;
+		Node* l, * r;
+		Node() : l(nullptr), r(nullptr), val(0), lazy(0) {}
+		void push(int L, int R) {
+			if (lazy == 0) return;
+			val += lazy * (R - L + 1);
+			if (L ^ R) {
+				if (!l) l = new Node();
+				if (!r) r = new Node();
+				l->lazy += lazy, r->lazy += lazy;
+			}
+			lazy = 0;
+		}
+	}*root;
+	SegTree() { root = new Node(); }
+	void update(int l, int r, int val, Node* node, int L = 1, int R = int(1e9)) {
+		node->push(L, R);
+		if (r < L || R < l) return;
+		if (l <= L && R <= r) { node->lazy = val, node->push(L, R); return; }
+		int mid = L + R >> 1;
+		if (!node->l) node->l = new Node();
+		if (!node->r) node->r = new Node();
+		update(l, r, val, node->l, L, mid);
+		update(l, r, val, node->r, mid + 1, R);
+		node->val = node->l->val + node->r->val;
+	}
+	int query(int l, int r, Node* node, int L = 1, int R = int(1e9)) {
+		if (!node) return 0;
+		node->push(L, R);
+		if (r < L || R < l) return 0;
+		if (l <= L && R <= r) return node->val;
+		int mid = L + R >> 1;
+		return query(l, r, node->l, L, mid) + query(l, r, node->r, mid + 1, R);
+	}
+}ST;
+
 int32_t main(){
     fastio;
     int n,m,k; cin >> n >> m >> k;
