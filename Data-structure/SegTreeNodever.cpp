@@ -3,7 +3,7 @@ const int PRECISION = 0;
 const int INF = int(1e18);
 
 // Problem URL : https://www.acmicpc.net/problem/9345
-
+// ref : https://www.acmicpc.net/source/57600099
 // 노드 구조체, + operator만 설정해서 넘겨주기
 
 struct Node{
