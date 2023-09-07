@@ -20,16 +20,27 @@ struct point {
 		int t = (b.x - a.x) * (c.y - b.y) - (c.x - b.x) * (b.y - a.y);
 		return t ? t > 0 ? 1 : -1 : 0;
 	}
-	friend int is_cross(point a, point b, point c, point d) { // cross : -1, intersect : 1
+	friend int is_cross(point a, point b, point c, point d) { // cross : -1(X), intersect : 1(X or L)
 		int ab = ccw(a, b, c) * ccw(a, b, d);
 		int cd = ccw(c, d, a) * ccw(c, d, b);
 		if (ab < 0 && cd < 0) return -1;
 		if (ab == 0 && cd == 0) {
 			if (a > b) swap(a, b);
 			if (c > d) swap(c, d);
+			if (!ccw(a, b, c) and !ccw(a, b, d) and !ccw(c, d, a) and !ccw(c, d, b) and c < b and a < d) return 2; // intersect INF
 			return c <= b && a <= d;
 		}
 		return ab <= 0 && cd <= 0;
+	}
+	friend point findInterCod(point a, point b, point c, point d){
+		double x = (a.x*b.y - a.y*b.x)*(c.x - d.x) - (a.x - b.x) * (c.x*d.y - c.y*d.x);
+		double y = (a.x*b.y - a.y*b.x)*(c.y - d.y) - (a.y - b.y) * (c.x*d.y - c.y*d.x);
+		double div = (a.x - b.x)*(c.y - d.y) - (a.y - b.y) * (c.x - d.x);
+		if(div == 0.0){
+			if(b == c and a <= c) return b;
+			else if(a == d and a >= c) return a;
+		}
+		return point(x/div, y/div);
 	}
 	/* operators */
 	bool operator == (const point& i) const { return x == i.x && y == i.y; }
