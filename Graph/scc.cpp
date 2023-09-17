@@ -35,12 +35,24 @@ struct SCC {
 		for (int i = 1; i <= n; i++)
 			if (!dfs_order[i]) DFS(i);
 	}
-	vector<vector<int>> GetDAG(){
-		vector<vector<int>> G(scc_cnt);
+
+	vector<int> GetIndegree(){
+		vector<int> ret(scc_cnt + 1);
 		for(int i = 1; i <= n; i++){
 			for(auto& nxt : adj[i]){
 				if(scc[i] == scc[nxt]) continue;
-				G[scc[i] - 1].push_back(scc[nxt]);
+				ret[scc[nxt]]++;
+			}
+		}
+		return ret;
+	}
+
+	vector<vector<int>> GetDAG(){
+		vector<vector<int>> G(scc_cnt + 1);
+		for(int i = 1; i <= n; i++){
+			for(auto& nxt : adj[i]){
+				if(scc[i] == scc[nxt]) continue;
+				G[scc[i]].push_back(scc[nxt]);
 			}
 		}
 		for(auto& i : G){
