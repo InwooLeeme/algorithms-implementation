@@ -27,6 +27,34 @@ struct SegTree {
 	}
 };
 
+// easy ver
+struct SegTree{
+	int sz = 1 << 17;
+	vector<int> tree;
+	
+	SegTree():tree(sz << 1){}
+
+	void Build(){
+		for(int i = sz - 1; i >= 1; i--) tree[i] = tree[i << 1] + tree[i << 1 | 1];
+	}
+	
+	void Update(int i, int val){
+		i |= sz; tree[i] = val;
+		while(i >>= 1) tree[i] = tree[i << 1] + tree[i << 1 | 1];
+	}
+
+	int Query(int l, int r){
+		int ret = 0;
+		l |= sz, r |= sz;
+		while(l <= r){
+			if(l & 1) ret += tree[l++];
+			if(~r & 1) ret += tree[r--];
+			l >>= 1; r >>= 1;
+		}
+		return ret;
+	}
+} ST;
+
 SegTree ST;
 
 int main() {
