@@ -134,9 +134,9 @@ void test_case(){
     for(int i = 1; i <= n; i++) sf1(v[i]);
     int ret = 0;
     for(int i = n; i >= 1; i--){
-        ret += ST.Query(1, v[i] - 1);
-        ST.Update(v[i], 1);
-    }
+        ret += ST.Query(1, v[i] - 1); // or ret += ST.Query(v[i] + 1, n)
+        ST.Update(v[i], 1); 
+    }	
     pf1l(ret);
 }
 
