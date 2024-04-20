@@ -1,11 +1,11 @@
-struct TwoSAT{
+struct two_sat{
 	int n,c,scc_cnt;
 	vector<vector<int>> adj;
 	vector<int> disc,scc;
 	stack<int> S;
-	TwoSAT(int n = 0):
-		n(n),c(0),disc((n << 1) + 1, 0),scc_cnt(0),
-		scc((n << 1) + 1, 0),adj((n << 1) + 1){}
+	two_sat(int n = 0):
+		n(n),c(0),disc(n + 1 << 1, 0),scc_cnt(0),
+		scc(n + 1 << 1, 0),adj(n + 1 << 1){}
 	
 	int DFS(int cur){
 		S.push(cur);
@@ -25,20 +25,39 @@ struct TwoSAT{
 		}
 		return ret;
 	}
-	int cvt(int x){ return (x <= n ? x + n : x - n); }
-	
-	void AddEdge(int a,int b){
-		adj[cvt(a)].push_back(b);
-		adj[cvt(b)].push_back(a);
+
+	int NOT(int x){ return x << 1 | 1; }
+
+	int cvt(int x){ return x << 1; }
+
+	void Add_Edge(int a, bool na, int b, bool nb){
+		a = a << 1 | na;
+		b = b << 1 | nb;
+		adj[a ^ 1].push_back(b);
+		adj[b ^ 1].push_back(a);
 	}
 	
 	bool isSatisified(){
-		for(int i = 1; i <= n << 1; i++){
+		for(int i = 1; i < (n + 1 << 1); i++){
 			if(!disc[i]) DFS(i);
 		}
 		for(int i = 1; i <= n; i++){
-			if(scc[i] == scc[cvt(i)]) return false;			
+			if(scc[cvt(i)] == scc[NOT(i)]) return false;			
 		}
 		return true;
 	}
+
+	bool get(int i) const{
+		return scc[cvt(i)] < scc[NOT(i)];
+	} 
 };
+
+void Main(){
+	int n,m; ri(n, m);
+	two_sat sat(n);
+	while(m--){
+		int a,b; ri(a, b);
+		sat.Add_Edge(abs(a), a < 0, abs(b), b < 0);
+	}
+	po(sat.isSatisified());
+} 
