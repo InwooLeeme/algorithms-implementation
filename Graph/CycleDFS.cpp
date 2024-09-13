@@ -105,31 +105,33 @@ u -> v로 가는 정점이 있고 v에서 아직 dfs(u)의 호출이 끝나기 �
 이 문제는 N의 범위가 작기 때문에 플로이드도 가능
 */
 
-int n;
-vi g[1111];
-bool vist[1111], finished[1111];
-bool flag;
+int n,ret;
+int nxt[101010];
+bitset<101010> vist;
+int finished[101010];
 
-void f(int cur){
-    vist[cur] = 1;
-    for(auto nxt : g[cur]){
-        if(!vist[nxt]) f(nxt);
-        else if(!finished[nxt]) flag = 1;        
-    }
-    finished[cur] = 1;
+void dfs(int cur = 1){
+	vist[cur] = 1;
+	if(!vist[nxt[cur]]) dfs(nxt[cur]);
+	else{
+		if(!finished[nxt[cur]]){
+			for(int i = nxt[cur]; i != cur; i = nxt[i]) ret++;
+			ret++;
+		}
+	}
+	finished[cur] = 1;
 }
 
-int32_t main(){
-    fastio;
-    sf1(n);
-    for(int i = 1; i <= n - 1; i++){
-        int t; sf1(t);
-        while(t--){
-            int x; sf1(x);
-            g[i].push_back(x);
-        }
-    }
-    f(1);
-    pf1l(flag ? "CYCLE" : "NO CYCLE");
-    return 0;
-}
+void Main(){
+	ri(n);
+	for(int i = 1; i <= n; i++){
+		int t; ri(t);
+		nxt[i] = t;
+	}
+	for(int i = 1; i <= n; i++){
+		if(!vist[i]){
+			dfs(i);
+		}
+	}
+	po(ret);
+}	
