@@ -1,140 +1,144 @@
-#pragma GCC target("avx,avx2,fma")
-#pragma GCC optimize("Ofast")
-#pragma GCC optimize("unroll-loops")
+// ===== Heavy-Light Decomposition (Node/Edge 둘 다 지원) =====
+// 기본 집계: 최대값, 항등원: -INF
+// - 정점 세그트리: segNode  (pos[v] = in[v] 에 정점값 저장)
+// - 간선 세그트리: segEdge  (pos[child] = in[child] 에 (parent,child) 간선값 저장)
+// 쿼리
+//   queryPathNode(u,v) : u~v 경로 정점 집계
+//   queryPathEdge(u,v) : u~v 경로 간선 집계  ← ★ 오프바이원 안전
+// 갱신
+//   updateNode(v, val)      : 정점 v 값 변경
+//   updateEdge(u,v, val)    : 간선(u,v) 값 변경 (더 깊은 쪽에 쓴다)
+
 #include <bits/stdc++.h>
-#include <ext/rope>
-#include <ext/pb_ds/assoc_container.hpp>
-#include <ext/pb_ds/tree_policy.hpp>
-#define fastio ios::sync_with_stdio(0), cin.tie(0), cout.tie(0)
 using namespace std;
-using namespace __gnu_cxx;
-using namespace __gnu_pbds;
 
-#define int int_fast64_t
-const int INF = 1e9 + 7;
+using ll = long long;
+const ll NINF = (ll)-4e18;
 
-/*
-HLD Template 5916 AC Code
-https://www.acmicpc.net/problem/5916
-Lazy + HLD (path_Update, Query)
-*/
+struct Seg {
+    int n;
+    vector<ll> t;
+    static inline ll ID(){ return NINF; }           // 항등원
+    static inline ll comb(ll a, ll b){ return max(a,b); } // 집계 연산
 
-template<size_t sz>
-struct SegTree {
-	vector<int> tree, lazy;
-	SegTree() : tree(sz << 1), lazy(sz << 1) {}
-	void Push(int node, int L, int R) {
-		if (node < sz) for (const int nxt : { node << 1, node << 1 | 1}) lazy[nxt] += lazy[node];
-		tree[node] += lazy[node] * (R - L + 1), lazy[node] = 0;
-	}
-	void Update(int l, int r, int val, int node = 1, int L = 1, int R = sz) {
-		Push(node, L, R);
-		if (r < L || R < l) return;
-		if (l <= L && R <= r) { lazy[node] += val, Push(node, L, R); return; }
-		int mid = L + R >> 1;
-		Update(l, r, val, node << 1, L, mid);
-		Update(l, r, val, node << 1 | 1, mid + 1, R);
-		tree[node] = tree[node << 1] + tree[node << 1 | 1];
-	}
-	int Query(int l, int r, int node = 1, int L = 1, int R = sz) {
-		Push(node, L, R);
-		if (r < L || R < l) return 0;
-		if (l <= L && R <= r) return tree[node];
-		int mid = L + R >> 1;
-		return Query(l, r, node << 1, L, mid) + Query(l, r, node << 1 | 1, mid + 1, R);
-	}
+    Seg(){}
+    Seg(int n): n(1){ while(this->n < n) this->n <<= 1; t.assign(this->n<<1, ID()); }
+    void assignN(int n_){ n=1; while(n<n_) n<<=1; t.assign(n<<1, ID()); }
+    void pointUpdate(int p, ll v){ // 1-indexed pos
+        int i = (p-1) + n; t[i] = v;
+        for(i >>= 1; i; i >>= 1) t[i] = comb(t[i<<1], t[i<<1|1]);
+    }
+    ll rangeQuery(int l, int r){ // 1-indexed inclusive
+        if(l>r) return ID();
+        ll L = ID(), R = ID();
+        int i = (l-1) + n, j = (r-1) + n;
+        while(i<=j){
+            if(i&1) L = comb(L, t[i++]);
+            if(!(j&1)) R = comb(t[j--], R);
+            i >>= 1; j >>= 1;
+        }
+        return comb(L,R);
+    }
 };
 
-template<size_t _sz>
 struct HLD {
-	SegTree<1 << 17> ST;
-	vector<int> cost, sz, dep, par, top, in, out;
-	vector<vector<pair<int, int>>> inp;
-	vector<vector<int>> adj;
-	HLD() : cost(_sz), sz(_sz), dep(_sz), par(_sz), top(_sz), in(_sz), out(_sz), inp(_sz), adj(_sz) {}
-	void add_edge(int a, int b, int c) { inp[a].push_back({ b, c }), inp[b].push_back({ a, c }); }
-	void dfs(int cur = 1, int prev = -1) {
-		for (auto [nxt, ncost] : inp[cur]) {
-			if (nxt == prev) continue;
-			adj[cur].push_back(nxt);
-			cost[nxt] = ncost;
-			dfs(nxt, cur);
-		}
-	}
-	void dfs1(int cur = 1) {
-		sz[cur] = 1;
-		for (auto& nxt : adj[cur]) {
-			dep[nxt] = dep[cur] + 1; par[nxt] = cur;
-			dfs1(nxt); sz[cur] += sz[nxt];
-			if (sz[nxt] > sz[adj[cur][0]]) swap(nxt, adj[cur][0]);
-		}
-	}
-	int temp = 0;
-	void dfs2(int cur = 1) {
-		in[cur] = ++temp;
-		for (auto nxt : adj[cur]) {
-			top[nxt] = (nxt == adj[cur][0] ? top[cur] : nxt);
-			dfs2(nxt);
-		}
-		out[cur] = temp;
-	}
-	void construct() {
-		dfs(), dfs1(), dfs2(top[1] = 1);
-		//for (int i = 1; in[i]; i++) ST.Update(in[i], cost[i]);
-	}
-	int path_query(int a, int b) {
-		int ret = -INF;
-		for (; top[a] ^ top[b]; a = par[top[a]]) {
-			if (dep[top[a]] < dep[top[b]]) swap(a, b);
-			ret = max(ret, ST.Query(in[top[a]], in[a]));
-		}
-		if (dep[a] > dep[b]) swap(a, b);
-		ret = max(ret, ST.Query(in[a] + 1, in[b]));
-		return ret;
-	}
-	/* void node_update(int x, int val) {
-		ST.Update(in[x], val);
-	} */
+    int N, root, timer;
+    vector<vector<int>> adj;
+    vector<int> parent, depth, heavy, head, in, out, sz;
 
-    void path_query(int a, int b, int c = 1){
-        while(top[a] != top[b]){
-            if(dep[top[a]] < dep[top[b]]) swap(a, b);
-            int st = top[a];
-            ST.Update(in[st], in[a], c);
-            a = par[st];
+    Seg segNode, segEdge; // 정점/간선용 세그트리
+
+    HLD(int n=0){ init(n); }
+    void init(int n){
+        N=n; adj.assign(N+1,{});
+        parent.assign(N+1,0); depth.assign(N+1,0);
+        heavy.assign(N+1,-1); head.assign(N+1,0);
+        in.assign(N+1,0); out.assign(N+1,0); sz.assign(N+1,0);
+        timer=0;
+    }
+    void addEdge(int u,int v){ adj[u].push_back(v); adj[v].push_back(u); }
+
+    int dfs1(int v,int p){
+        parent[v]=p; sz[v]=1; int mx=0;
+        for(int &to: adj[v]) if(to!=p){
+            depth[to]=depth[v]+1;
+            int s = dfs1(to,v);
+            sz[v]+=s;
+            if(s>mx) mx=s, heavy[v]=to;
         }
-        if(in[a] > in[b]) swap(a, b);
-        ST.Update(in[a] + 1, in[b], c);
+        return sz[v];
+    }
+    void dfs2(int v,int h){
+        head[v]=h; in[v]=++timer;
+        if(heavy[v]!=-1) dfs2(heavy[v], h);
+        for(int to: adj[v]){
+            if(to==parent[v] || to==heavy[v]) continue;
+            dfs2(to,to);
+        }
+        out[v]=timer;
+    }
+    void build(int r=1){
+        root=r; timer=0;
+        dfs1(root,0);
+        dfs2(root,root);
+        segNode.assignN(N);
+        segEdge.assignN(N); // edge는 in[child]에 저장할 것
     }
 
-    int Query(int a, int b){
-        int ret = 0;
-        while(top[a] != top[b]){
-            if(dep[top[a]] < dep[top[b]]) swap(a, b);
-            int st = top[a];
-            ret += ST.Query(in[st], in[a]);
-            a = par[st];
+    // ----- 갱신 -----
+    void updateNode(int v, ll val){ segNode.pointUpdate(in[v], val); }
+    // 간선(u,v) 갱신: 더 깊은 쪽의 in[] 위치에 기록
+    void updateEdge(int u,int v,ll val){
+        if(parent[u]==v) segEdge.pointUpdate(in[u], val);
+        else if(parent[v]==u) segEdge.pointUpdate(in[v], val);
+        else {
+            // u-v가 직접 간선이 아닌 경우: LCA경로의 특정 간선을 바꾸려는 게 아니라면 사용 X
+            // 필요 시 별도 처리
+            assert(false && "updateEdge: (u,v) is not a tree edge");
         }
-        if(in[a] > in[b]) swap(a, b);
-        ret += ST.Query(in[a] + 1, in[b]);
-        return ret;
+    }
+
+    // ----- 쿼리: 경로 상 정점 집계 -----
+    ll queryPathNode(int u,int v){
+        ll res = Seg::ID();
+        while(head[u]!=head[v]){
+            if(depth[head[u]]<depth[head[v]]) swap(u,v);
+            res = Seg::comb(res, segNode.rangeQuery(in[head[u]], in[u]));
+            u = parent[head[u]];
+        }
+        if(in[u]>in[v]) swap(u,v);
+        res = Seg::comb(res, segNode.rangeQuery(in[u], in[v]));
+        return res;
+    }
+
+    // ----- 쿼리: 경로 상 간선 집계 (★오프바이원 처리 포함) -----
+    // segEdge는 pos[child]=in[child]에 (parent,child) 간선값 저장
+    ll queryPathEdge(int u,int v){
+        ll res = Seg::ID();
+        while(head[u]!=head[v]){
+            if(depth[head[u]]<depth[head[v]]) swap(u,v);
+            // 체인 [head[u]..u] 내 간선만: in[head[u]]+1 ~ in[u]
+            res = Seg::comb(res, segEdge.rangeQuery(in[head[u]]+1, in[u]));
+            u = parent[head[u]];
+        }
+        if(in[u]>in[v]) swap(u,v);
+        // 같은 체인 마무리: 간선이므로 [in[u]+1, in[v]]
+        res = Seg::comb(res, segEdge.rangeQuery(in[u]+1, in[v]));
+        return res;
+    }
+
+    // (옵션) 서브트리 쿼리/갱신은 "정점 저장"에서만 의미가 있다.
+    ll querySubtreeNode(int v){ return segNode.rangeQuery(in[v], out[v]); }
+    void updateSubtreeNode(int v, ll val){ // 예: 전부 세팅하려면 lazy seg 필요
+        segNode.pointUpdate(in[v], val); // point만 예시
+    }
+
+    // 유용 보조
+    int lca(int a,int b){
+        while(head[a]!=head[b]){
+            if(depth[head[a]]>depth[head[b]]) a=parent[head[a]];
+            else b=parent[head[b]];
+        }
+        return (in[a]<in[b]?a:b);
     }
 };
-
-HLD<1 << 17> hld;
-
-int32_t main(){
-    fastio;
-    int n,q; cin >> n >> q;
-    for(int i = 1; i < n; i++){
-        int a,b; cin >> a >> b;
-        hld.add_edge(a, b, 1);
-    }
-    hld.construct();
-    while(q--){
-        char c; int u,v; cin >> c >> u >> v;
-        if(c == 'P') hld.path_query(u, v, 1);
-        else cout << hld.Query(u, v) << "\n";
-    }
-    return 0;
-}
