@@ -14,6 +14,7 @@ using namespace std;
 
 using ll = long long;
 const ll NINF = (ll)-4e18;
+const int PINF = (ll)4e18;
 
 struct Seg {
     int n;
