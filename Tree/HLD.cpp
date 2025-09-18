@@ -119,7 +119,7 @@ struct HLD {
         while(head[u]!=head[v]){
             if(depth[head[u]]<depth[head[v]]) swap(u,v);
             // 체인 [head[u]..u] 내 간선만: in[head[u]]+1 ~ in[u]
-            res = Seg::comb(res, segEdge.rangeQuery(in[head[u]]+1, in[u]));
+            res = Seg::comb(res, segEdge.rangeQuery(in[head[u]], in[u]));
             u = parent[head[u]];
         }
         if(in[u]>in[v]) swap(u,v);
