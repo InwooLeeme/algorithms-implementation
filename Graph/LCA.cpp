@@ -12,7 +12,7 @@ struct LCA{
 		n(n),adj(n + 1),depth(n + 1),vist(n + 1),
 		par(n + 1,vector<int>(30)){}
 	
-	void AddEdge(int a,int b){
+	void add_edge(int a,int b){
 		adj[a].push_back(b);
 		adj[b].push_back(a);
 	}
@@ -37,7 +37,7 @@ struct LCA{
 		}
 	}
 	
-	int GetLCA(int a,int b){
+	int lca(int a,int b){
 		if(depth[a] < depth[b]) swap(a, b);
 		int diff = depth[a] - depth[b];
 		for(int i = 0; diff; i++){
@@ -58,13 +58,13 @@ int main(){
 	LCA L(n);
 	for(int i = 1; i < n; i++){
 		int a,b; sf2(a, b);
-		L.AddEdge(a, b);
+		L.add_edge(a, b);
 	}
 	L.DFS(1, 0);
 	L.MakeTable();
 	int q; sf1(q);
 	while(q--){
 		int u,v; sf2(u, v);
-		pf1l(L.GetLCA(u, v));
+		pf1l(L.lca(u, v));
 	}
 }
