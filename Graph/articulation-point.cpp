@@ -9,36 +9,37 @@
 using namespace std;
 
 struct ArticulationPoint {
-	int n, dfs_cnt;
-	vector<int> dfs_order, check;
+	int n, dfs_cnt = 0;
+	vector<int> dfs_order, low;
+	vector<char> check;
 	vector<vector<int>> adj;
 
-	ArticulationPoint(int n = 0) :
-		n(n), adj(n + 1),
-		dfs_order(n + 1), check(n + 1),
-		dfs_cnt(0) {}
+	explicit ArticulationPoint(int n = 0) :
+		n(n), dfs_order(n + 1), low(n + 1), check(n + 1), adj(n + 1) {}
 
 	void AddEdge(int a, int b) {
 		adj[a].push_back(b);
 		adj[b].push_back(a);
 	}
 
-	int DFS(int cur, bool IsRoot = 0) {
-		int ret = dfs_order[cur] = ++dfs_cnt, cnt = 0;
-		for (const auto& nxt : adj[cur]) {
-			if (!dfs_order[nxt]) {
-				const int t = DFS(nxt);
-				if (t >= dfs_order[cur]) check[cur] = 1;
-				ret = min(ret, t), cnt++;
+	void DFS(int cur, int parent) {
+		dfs_order[cur] = low[cur] = ++dfs_cnt;
+		int children = 0;
+		for (int nxt : adj[cur]) {
+			if (dfs_order[nxt]) {
+				low[cur] = min(low[cur], dfs_order[nxt]);
+				continue;
 			}
-			else ret = min(ret, dfs_order[nxt]);
+			DFS(nxt, cur);
+			low[cur] = min(low[cur], low[nxt]);
+			children++;
+			if (parent != 0 && low[nxt] >= dfs_order[cur]) check[cur] = 1;
 		}
-		if (IsRoot) check[cur] = cnt > 1;
-		return ret;
+		if (parent == 0 && children > 1) check[cur] = 1;
 	}
 
 	void GetCheck() {
 		for (int i = 1; i <= n; i++)
-			if (!dfs_order[i]) DFS(i, 1);
+			if (!dfs_order[i]) DFS(i, 0);
 	}
 };
