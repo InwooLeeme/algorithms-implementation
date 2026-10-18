@@ -24,6 +24,18 @@ struct Fenwick {
     }
 };
 
+constexpr int OFF = 1000001, M = 1 << 21;
+int fw[M + 1], cnt;
+
+void add(int x) { for (int i = x + OFF; i <= M; i += i & -i) ++fw[i]; ++cnt; }
+// k번째(1-indexed) 작은 값
+int kth(int k) {
+    int pos = 0;
+    for (int pw = M; pw; pw >>= 1)
+        if (pos + pw <= M && fw[pos + pw] < k) { pos += pw; k -= fw[pos]; }
+    return pos + 1 - OFF;
+}
+
 int main(){
     cin.tie(0)->sync_with_stdio(0);
 }
